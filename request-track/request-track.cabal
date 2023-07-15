@@ -1,0 +1,29 @@
+cabal-version:      3.0
+name:               request-track
+version:            0.1
+synopsis:           Track HTTP requests across services
+-- description:
+license:            MIT
+license-file:       LICENSE
+author:             Nick
+maintainer:         nick@typeable.io
+copyright:          Typeable.io
+category:           Web
+build-type:         Simple
+
+common warnings
+    ghc-options: -Wall
+
+library
+    import:           warnings
+    exposed-modules:  Web.Tracking
+    other-modules:    Web.Tracking.Internal
+                      Web.Tracking.Headers
+    -- other-extensions:
+    build-depends:    base >=4.14 && < 5,
+                      bytestring >= 0.11,
+                      case-insensitive >= 1.2,
+                      http-types >= 0.12,
+                      wai >= 3.2
+    hs-source-dirs:   src
+    default-language: GHC2021

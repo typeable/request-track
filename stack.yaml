@@ -1,0 +1,13 @@
+resolver: lts-20.26
+
+packages:
+- example-server
+- request-track
+- request-track-servant
+
+extra-deps:
+  - git: https://github.com/typeable/thread-local.git
+    commit: 10965a0cd5a208db7e4a513dd505eea1f4dc2167
+
+nix:
+  packages: [ zlib ]

@@ -1,0 +1,31 @@
+cabal-version:      3.0
+name:               request-track-servant
+version:            0.1
+synopsis:           Servant combinators for request tracking
+-- description:
+license:            MIT
+license-file:       LICENSE
+author:             Nick
+maintainer:         nick@typeable.io
+-- copyright:
+category:           Web
+build-type:         Simple
+
+common warnings
+    ghc-options: -Wall
+
+library
+    import:           warnings
+    exposed-modules:  Web.Tracking.Servant
+    other-modules:    Web.Tracking.Servant.Handler
+                      Web.Tracking.Servant.Types
+    -- other-extensions:
+    build-depends:    base >=4.14.0.0 && < 5,
+                      bytestring >= 0.11,
+                      http-types >= 0.12,
+                      request-track,
+                      servant >= 0.19,
+                      servant-server >= 0.19,
+                      wai >= 3.2
+    hs-source-dirs:   src
+    default-language: GHC2021
