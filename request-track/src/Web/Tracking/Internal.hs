@@ -3,10 +3,12 @@
 module Web.Tracking.Internal where
 
 import Data.ByteString (ByteString)
+import qualified Data.ByteString.Char8 as ByteString
 import Data.CaseInsensitive (CI)
 import Data.Proxy
 import Data.String
 import GHC.TypeLits
+import Network.HTTP.Types
 
 -- | Request ID header name.
 --   Note that this is unofficial but a widespread thing.
@@ -37,3 +39,12 @@ incrLevel r@ReqtrackInfo{requestLevel} = r { requestLevel = requestLevel + 1 }
 
 replaceSource :: ByteString -> ReqtrackInfo -> ReqtrackInfo
 replaceSource s r = r { requestSource = s }
+
+removeTrackingHeaders :: [Header] -> [Header]
+removeTrackingHeaders = filter (\(hdr,_) -> hdr `notElem` [requestIdHdr, requestLevelHdr, requestSourceHdr])
+
+mkTrackingHeaders :: ReqtrackInfo -> [Header]
+mkTrackingHeaders rti = [ (requestIdHdr, requestId rti)
+                        , (requestLevelHdr, ByteString.pack (show (requestLevel rti)))
+                        , (requestSourceHdr, requestSource rti)
+                        ]

@@ -17,12 +17,14 @@ common warnings
 library
     import:           warnings
     exposed-modules:  Web.Tracking
+                      Web.Tracking.Client
     other-modules:    Web.Tracking.Internal
                       Web.Tracking.Headers
     -- other-extensions:
     build-depends:    base >=4.14 && < 5,
                       bytestring >= 0.11,
                       case-insensitive >= 1.2,
+                      http-client >= 0.7,
                       http-types >= 0.12,
                       wai >= 3.2
     hs-source-dirs:   src

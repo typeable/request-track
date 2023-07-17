@@ -3,7 +3,6 @@ module Web.Tracking.Headers where
 import Web.Tracking.Internal
 
 import qualified Data.ByteString.Char8 as ByteString
-import Network.HTTP.Types
 import Network.Wai
 import Text.Read (readMaybe)
 
@@ -18,13 +17,7 @@ parseTrackingHeaders req = ReqtrackInfo <$> reqId
 
 addTrackingHeaders :: ReqtrackInfo -> Response -> Response
 addTrackingHeaders rti = mapResponseHeaders f
-  where headers :: ResponseHeaders
-        headers = [ (requestIdHdr, requestId rti)
-                  , (requestLevelHdr, ByteString.pack (show (requestLevel rti)))
-                  , (requestSourceHdr, requestSource rti)
-                  ]
-        filterHdrs = filter (\(hdr,_) -> hdr `notElem` [requestIdHdr, requestLevelHdr, requestSourceHdr])
-        f hdrs = headers ++  filterHdrs hdrs
+  where f hdrs = mkTrackingHeaders rti ++ removeTrackingHeaders hdrs
 
 trackingMiddleware :: (ReqtrackInfo -> IO ()) -> Middleware
 trackingMiddleware f app req resp
