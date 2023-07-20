@@ -4,6 +4,7 @@
 module Web.Tracking.Servant.Types where
 
 import Web.Tracking
+import Web.Tracking
 
 import Control.Monad ((<=<))
 import Control.Monad.IO.Class
@@ -18,33 +19,35 @@ import Servant.Server.Internal
 -- | Types to use in you API description
 data RequestTracking
 
+type family TrackingData :: Type -> Type
+
 -- | Same as above, except no argument is passed to a handler.
 data RequestTracking_
 
-newtype ReqtrackingHandler r o = ReqtrackingHandler { unReqtrackingHandler :: r -> Handler o
-                                                    } deriving (Functor)
+newtype ReqtrackingHandler o = ReqtrackingHandler { unReqtrackingHandler :: Maybe ReqtrackInfo -> Handler o
+                                                  } deriving (Functor)
 
-mkReqtrackingHandler :: (r -> Handler o) -> ReqtrackingHandler r o
+mkReqtrackingHandler :: (Maybe ReqtrackInfo -> Handler o) -> ReqtrackingHandler o
 mkReqtrackingHandler = ReqtrackingHandler
 
 instance forall (api :: Type) context.
          ( HasServer api context
-         , HasContextEntry context (ReqtrackingHandler Request (Maybe ReqtrackInfo))
+         , HasContextEntry context (ReqtrackingHandler (TrackingData RequestTracking))
          ) =>  HasServer (RequestTracking :> api) context where
-  type ServerT (RequestTracking :> api) m = Maybe ReqtrackInfo -> ServerT api m
+  type ServerT (RequestTracking :> api) m = TrackingData RequestTracking -> ServerT api m
 
   hoistServerWithContext _ pc nt s = hoistServerWithContext (Proxy :: Proxy api) pc nt . s
 
   route _ context subserver = route (Proxy :: Proxy api) context (subserver `addHeaderCheck` withRequest trackingCheck)
-    where trackingCheck :: Request -> DelayedIO (Maybe ReqtrackInfo)
+    where trackingCheck :: Request -> DelayedIO (TrackingData RequestTracking)
           trackingCheck = either delayedFailFatal return <=<  liftIO . runHandler . trackingHandler
-          trackingHandler :: Request -> Handler (Maybe ReqtrackInfo)
+          trackingHandler :: Request -> Handler (TrackingData RequestTracking)
           trackingHandler = let ReqtrackingHandler h = getContextEntry context
-                            in h
+                            in h . parseTrackingHeaders
 
 instance forall (api :: Type) context.
          ( HasServer api context
-         , HasContextEntry context (ReqtrackingHandler Request (Maybe ReqtrackInfo))
+         , HasContextEntry context (ReqtrackingHandler ())
          ) =>  HasServer (RequestTracking_ :> api) context where
   type ServerT (RequestTracking_ :> api) m = ServerT api m
 
@@ -52,10 +55,10 @@ instance forall (api :: Type) context.
 
   route _ context subserver = route (Proxy :: Proxy api) context (fmap const subserver `addHeaderCheck` withRequest trackingCheck)
     where trackingCheck :: Request -> DelayedIO ()
-          trackingCheck = either delayedFailFatal (const $ return ())<=<  liftIO . runHandler . trackingHandler
-          trackingHandler :: Request -> Handler (Maybe ReqtrackInfo)
+          trackingCheck = either delayedFailFatal (const $ return ()) <=<  liftIO . runHandler . trackingHandler
+          trackingHandler :: Request -> Handler ()
           trackingHandler = let ReqtrackingHandler h = getContextEntry context
-                            in h
+                            in h . parseTrackingHeaders
 
 
 type ReqtrackHeaders = '[ Header RequestIdHdr ByteString

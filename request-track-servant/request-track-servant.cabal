@@ -17,8 +17,7 @@ common warnings
 library
     import:           warnings
     exposed-modules:  Web.Tracking.Servant
-    other-modules:    Web.Tracking.Servant.Handler
-                      Web.Tracking.Servant.Types
+    other-modules:    Web.Tracking.Servant.Types
     -- other-extensions:
     build-depends:    base >=4.14.0.0 && < 5,
                       bytestring >= 0.11,
