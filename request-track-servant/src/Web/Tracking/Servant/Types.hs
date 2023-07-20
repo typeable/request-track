@@ -4,7 +4,6 @@
 module Web.Tracking.Servant.Types where
 
 import Web.Tracking
-import Web.Tracking
 
 import Control.Monad ((<=<))
 import Control.Monad.IO.Class
@@ -24,15 +23,15 @@ type family TrackingData :: Type -> Type
 -- | Same as above, except no argument is passed to a handler.
 data RequestTracking_
 
-newtype ReqtrackingHandler o = ReqtrackingHandler { unReqtrackingHandler :: Maybe ReqtrackInfo -> Handler o
-                                                  } deriving (Functor)
+newtype ReqtrackingHandler r o = ReqtrackingHandler { unReqtrackingHandler :: r -> Handler o
+                                                    } deriving (Functor)
 
-mkReqtrackingHandler :: (Maybe ReqtrackInfo -> Handler o) -> ReqtrackingHandler o
+mkReqtrackingHandler :: (Maybe ReqtrackInfo -> Handler o) -> ReqtrackingHandler (Maybe ReqtrackInfo) o
 mkReqtrackingHandler = ReqtrackingHandler
 
 instance forall (api :: Type) context.
          ( HasServer api context
-         , HasContextEntry context (ReqtrackingHandler (TrackingData RequestTracking))
+         , HasContextEntry context (ReqtrackingHandler (Maybe ReqtrackInfo) (TrackingData RequestTracking))
          ) =>  HasServer (RequestTracking :> api) context where
   type ServerT (RequestTracking :> api) m = TrackingData RequestTracking -> ServerT api m
 
@@ -47,7 +46,7 @@ instance forall (api :: Type) context.
 
 instance forall (api :: Type) context.
          ( HasServer api context
-         , HasContextEntry context (ReqtrackingHandler ())
+         , HasContextEntry context (ReqtrackingHandler (Maybe ReqtrackInfo) ())
          ) =>  HasServer (RequestTracking_ :> api) context where
   type ServerT (RequestTracking_ :> api) m = ServerT api m
 
