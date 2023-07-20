@@ -19,6 +19,11 @@ addTrackingHeaders :: ReqtrackInfo -> Response -> Response
 addTrackingHeaders rti = mapResponseHeaders f
   where f hdrs = mkTrackingHeaders rti ++ removeTrackingHeaders hdrs
 
+echoMiddleware :: Middleware
+echoMiddleware app req resp
+  | Just rti <- parseTrackingHeaders req = app req (resp . addTrackingHeaders rti)
+  | otherwise = app req resp
+
 trackingMiddleware :: (ReqtrackInfo -> IO ()) -> Middleware
 trackingMiddleware f app req resp
   | Just rti <- parseTrackingHeaders req = do f rti
