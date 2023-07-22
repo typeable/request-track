@@ -21,9 +21,11 @@ library
     -- other-extensions:
     build-depends:    base >=4.14.0.0 && < 5,
                       bytestring >= 0.11,
+                      containers >= 0.6,
                       http-types >= 0.12,
                       request-track,
                       servant >= 0.19,
+                      servant-client-core >= 0.19,
                       servant-server >= 0.19,
                       wai >= 3.2
     hs-source-dirs:   src
