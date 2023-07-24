@@ -16,11 +16,17 @@ common warnings
 executable example-server
     import:           warnings
     main-is:          Main.hs
+    other-modules:    API
+                      Client
+                      Server
+                      TLS
     build-depends:    base >=4.16 && <5,
+                      exceptions >= 0.10,
                       http-client,
                       request-track,
                       request-track-servant,
                       servant,
+                      servant-client,
                       servant-server,
                       thread-local,
                       wai,
