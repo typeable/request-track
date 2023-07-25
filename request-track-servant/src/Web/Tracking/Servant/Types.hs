@@ -17,7 +17,28 @@ import Servant.Client.Core
 import Servant.Server
 import Servant.Server.Internal
 
--- | Types to use in you API description
+-- | Combinator for your Servant API description. Prepend it to your API for greater enjoyment!
+--   Example:
+--
+-- @
+--   type MyAPI = RequestTracking :> "ping" :> Get '[JSON] Text
+-- @
+--
+--   In addition to the API combinator, you also need to create a context handler that will
+--   handler the tracking data (see 'ReqtrackInfo') and produce desired output, which in turn
+--   will be passed to your API handlers.
+--   The type of values passed to API handlers is controlled by @type instance TrackingData RequestTracking@,
+--   which isn't set by default.
+--   The server code should look something like this:
+--
+-- @
+--    data TrackingArg = ...
+--
+--    type instance TrackingData RequestTracking = TrackingArg
+--
+--    trackingHandler :: ReqtrackingHandler (Maybe ReqtrackInfo) TrackingArg
+--
+-- @
 data RequestTracking
 
 type family TrackingData a
@@ -25,8 +46,17 @@ type family TrackingData a
 -- | Same as above, except no argument is passed to a handler.
 data RequestTracking_
 
-newtype ReqtrackingHandler r o = ReqtrackingHandler { unReqtrackingHandler :: r -> Handler o
+newtype ReqtrackingHandler r o = ReqtrackingHandler { runReqtrackingHandler :: r -> Handler o
                                                     } deriving (Functor)
+
+instance Applicative (ReqtrackingHandler r) where
+  pure x = ReqtrackingHandler $ \_ -> pure x
+  f <*> v = ReqtrackingHandler $ \r -> runReqtrackingHandler f r <*> runReqtrackingHandler v r
+
+instance Monad (ReqtrackingHandler r) where
+  return = pure
+  f >>= g = ReqtrackingHandler $ \r -> do a <- runReqtrackingHandler f r
+                                          runReqtrackingHandler (g a) r
 
 mkReqtrackingHandler :: (Maybe ReqtrackInfo -> Handler o) -> ReqtrackingHandler (Maybe ReqtrackInfo) o
 mkReqtrackingHandler = ReqtrackingHandler
