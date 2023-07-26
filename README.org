@@ -1,0 +1,18 @@
+#+TITLE: Request tracking framework
+#+AUTHOR: Nick <nick@typeable.io>
+
+* Mechanism
+
+See [[https://github.com/typeable/technical_notes/blob/master/Request%20Tracking/Tracking.org][this note]] for the mechanism description.
+
+* Lower-level API
+
+~request-track~ library provides WAI primitives to handle the passed headers. At the very least you would want to use ~echoMiddleware~ in order to send back the tracking headers in every HTTP reply.
+
+* Servant API
+
+~request-track-servant~ provides combinators to use with Servant. See the haddock documentation for more info.
+
+* Example server
+
+~example-server~ directory contains a simple HTTP server that uses all this stuff.
