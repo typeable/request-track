@@ -37,15 +37,22 @@ import Servant.Server.Internal
 --    type instance TrackingData RequestTracking = TrackingArg
 --
 --    trackingHandler :: ReqtrackingHandler (Maybe ReqtrackInfo) TrackingArg
+--    trackingHandler = mkReqtrackingHandler $ \mrti ->
+--                        case mrti of
+--                          Just rti -> ... -- Do something with ReqtrackInfo, return TrackingArg
+--                          Nothing -> ...
 --
 -- @
 data RequestTracking
 
+-- | See 'RequestTracking'
 type family TrackingData a
 
 -- | Same as above, except no argument is passed to a handler.
 data RequestTracking_
 
+-- | Servant context handler used for processing 'ReqtrackInfo' before passing the result to endpoint handlers.
+--   Use 'mkReqtrackingHandler' in your code instead of the constructor.
 newtype ReqtrackingHandler r o = ReqtrackingHandler { runReqtrackingHandler :: r -> Handler o
                                                     } deriving (Functor)
 
@@ -58,6 +65,7 @@ instance Monad (ReqtrackingHandler r) where
   f >>= g = ReqtrackingHandler $ \r -> do a <- runReqtrackingHandler f r
                                           runReqtrackingHandler (g a) r
 
+-- | Smart constructor to create 'ReqtrackingHandler'.
 mkReqtrackingHandler :: (Maybe ReqtrackInfo -> Handler o) -> ReqtrackingHandler (Maybe ReqtrackInfo) o
 mkReqtrackingHandler = ReqtrackingHandler
 
@@ -108,6 +116,7 @@ instance HasClient m api => HasClient m (RequestTracking_ :> api) where
   hoistClientMonad pm Proxy f cl = hoistClientMonad pm (Proxy :: Proxy api) f cl
 
 
+-- | Headers list to use with 'Headers'. Currently unused.
 type ReqtrackHeaders = '[ Header RequestIdHdr ByteString
                         , Header RequestLevelHdr Word
                         , Header RequestSourceHdr ByteString
