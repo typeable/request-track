@@ -11,6 +11,11 @@ maintainer:         nick@typeable.io
 category:           Web
 build-type:         Simple
 
+flag openapi
+    description:      Enable openapi instances
+    default:          False
+    manual:           True
+
 common warnings
     ghc-options: -Wall
 
@@ -18,7 +23,6 @@ library
     import:           warnings
     exposed-modules:  Web.Tracking.Servant
     other-modules:    Web.Tracking.Servant.Types
-    -- other-extensions:
     build-depends:    base >=4.14.0.0 && < 5,
                       bytestring >= 0.11,
                       containers >= 0.6,
@@ -28,5 +32,9 @@ library
                       servant-client-core >= 0.19,
                       servant-server >= 0.19,
                       wai >= 3.2
+    if flag(openapi)
+      other-modules:  Web.Tracking.Servant.OpenAPI
+      build-depends:  servant-openapi3
+      cpp-options:    -DOPENAPI
     hs-source-dirs:   src
     default-language: GHC2021

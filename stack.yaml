@@ -1,4 +1,4 @@
-resolver: lts-20.26
+resolver: lts-21.6
 
 packages:
 - example-server
@@ -11,3 +11,7 @@ extra-deps:
 
 nix:
   packages: [ zlib ]
+
+flags:
+  request-track-servant:
+    openapi: true
